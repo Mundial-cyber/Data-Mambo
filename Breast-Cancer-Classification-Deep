@@ -1,0 +1,333 @@
+CONFIG.PY MODULE
+""" 
+Visualize the dataset in the terminal using the tree command. Make datasets directory and original directory that holds the patient's data.
+mkdir datasets, mkdir original.
+C:\Users\Admin\PracticePage\PracticePageProjects\Scripts\Breast-Cancer-Classification-Deep\datasets\original\tree
+
+Create a config.py module that will declare paths for the dataset, paths for training, validation, and test
+data using basepath. Also declare the training data as 80%(Including validation data as 10%)
+""" 
+
+
+import os
+
+input_dataset = "datasets/original"
+
+base_path = "datasets/idc"
+
+#Path to where training images will be stored.
+train_path = os.path.sep.join([base_path, "training"])
+
+#Path to where validation images will be stored.
+val_path = os.path.sep.join([base_path, "validation"])
+
+#Path to where testing images will be stored.
+test_path = os.path.sep.join([base_path, "testing"])
+
+train_split = 0.8
+
+val_split = 0.1
+
+#Build the dataset in build_dataset.py
+
+BUILD_DATASET.PY MODULE
+"""
+Build another python module called build_dataset.py that includes codes that
+a) Split data into training, validation, and testing using 80%(including 10% validation), and 20% testing data.
+b) Use Keras to use ImageDataGenerator which will extract batches of images. Avoids making space of the dataset in memory at once.
+c) Later run the py build_dataset.py in the terminal
+"""
+#Import libraries
+from Cancernet import config
+import sys
+import imutils
+from imutils import paths
+import random, shutil, os
+
+#Get all the image paths in the input_dataset from config directory.
+originalPaths = list(paths.list_images(config.input_dataset))
+
+#Same as random_state for reproducability
+random.seed(7)
+
+#Shuffle the images.
+random.shuffle(originalPaths)
+
+#Split the dataset to training and testing sets
+index = int(len(originalPaths) * config.train_split)
+trainPaths = originalPaths[:index]
+testPaths = originalPaths[index:]
+
+#Split the dataset to training and validation sets.
+index = int(len(trainPaths) * config.val_split)
+valPaths = trainPaths[:index]
+trainPaths = trainPaths[index:]
+
+#Organize the files.
+datasets = [("training", trainPaths, config.train_path),
+		   ("validation", valPaths, config.val_path),
+		   ("testing", testPaths, config.test_path)
+		  ]
+#Iterate over this list to process each dataset type(training, validation or testing-setType)
+#originalPaths where images are and basePath where images will be stored.
+for (setType, originalPaths, basePath) in datasets:
+	print(f"Building {setType}set")
+	if not os.path.exists(basePath):
+		print (f"Building directory {basePath}")
+		os.makedirs(basePath)
+
+	#Iterates over all the image paths.
+	for path in originalPaths:
+		#Extract the filename by splitting the file's full path at the directory separators(/ or \)
+		file = path.split(os.path.sep)[-1]
+		#Extract labels. Extracts second-to-last character of the filename (eg image_1.jpg)
+		label = file[-5:-4]
+		#Path for specific label subdirectory.
+		labelPath = os.path.sep.join([basePath, label])
+		#Check and create the subdirectory if the path is not present.
+		if not os.path.exists(labelPath):
+			print(f"Building directory {labelPath}")
+			os.makedirs(labelPath)
+		#Combines labelPath and file to create the full destination path of the image(Eg dataset\training\1\image_1.jpg)
+		newPath = os.path.sep.join([labelPath, file])
+		#Copy file from the original path to new path to preserve metadata.
+		shutil.copy2(path, newPath)
+
+CANCERNET.PY
+"""
+This is a Convolutional Neural Network that does the following;
+a) Use 3*3 CONV filters
+b) Stack these filters on top of each other.
+c) Perform Max Pooling
+d) Use depthwise separable convolution.
+Used this project to classify images using Keras with TensorFlow as the backend to create deep learning model.
+"""
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import BatchNormalization, SeparableConv2D, MaxPooling2D
+from tensorflow.keras.layers import Activation, Flatten, Dropout, Dense
+from tensorflow.keras import backend as K
+from tensorflow.keras.optimizers import Adagrad
+
+"""
+Width and height-Dimensions of input image, 
+depth-Number of color channels in the image, 
+classes-Number of classes for classification.
+"""
+
+class CancerNet:
+	@staticmethod
+	def build(width,height,depth,classes):
+		#Model Initialization(Models will be stacked over one another(sequential))
+		model=Sequential()
+		shape=(height,width,depth)
+		#Default channel dimension.
+		channelDim=-1
+
+		#Used if channels dimensions comes first(eg, depth, width, height). It changes to 1.
+
+		if K.image_data_format()=="channels_first":
+			shape=(depth,height,width)
+			channelDim=1
+		#First Convolution.
+		#Adds separable convolution layer with 32 filters, kernel size (3,3) and same padding(output will have same spatial dimensions)
+		model.add(SeparableConv2D(32, (3,3), padding="same",input_shape=shape))
+		#Adds ReLu activation function
+		model.add(Activation("relu"))
+		#Normalize output to help improve training.
+		model.add(BatchNormalization(axis=channelDim))
+		#Reduce spatial dimension of the output map.
+		model.add(MaxPooling2D(pool_size=(2,2)))
+		#Prevent overfitting by setting 25% of neurons to 0 during training.
+		model.add(Dropout(0.25))
+
+		#Second Convolution.
+		#Same as the first convolution but with 64 filters and two convolutions with ReLu activation.
+		model.add(SeparableConv2D(64, (3,3), padding="same"))
+		model.add(Activation("relu"))
+		model.add(BatchNormalization(axis=channelDim))
+		model.add(SeparableConv2D(64, (3,3), padding="same"))
+		model.add(Activation("relu"))
+		model.add(BatchNormalization(axis=channelDim))
+		model.add(MaxPooling2D(pool_size=(2,2)))
+		model.add(Dropout(0.25))
+
+		#Third Convolution
+		#Similar to the second but with 128 filters. Three convolution layers are used with ReLu followed by Max Pooling and drop out. 
+		model.add(SeparableConv2D(128, (3,3), padding="same"))
+		model.add(Activation("relu"))
+		model.add(BatchNormalization(axis=channelDim))
+		model.add(SeparableConv2D(128, (3,3), padding="same"))
+		model.add(Activation("relu"))
+		model.add(BatchNormalization(axis=channelDim))
+		model.add(SeparableConv2D(128, (3,3), padding="same"))
+		model.add(Activation("relu"))
+		model.add(BatchNormalization(axis=channelDim))
+		model.add(MaxPooling2D(pool_size=(2,2)))
+		model.add(Dropout(0.25))
+
+		#Fully connected layers.
+		#Convert 3D feature map into 1D vector.
+		model.add(Flatten())
+		#Add full dense layer with 256 and activate with ReLu.
+		model.add(Dense(256))
+		model.add(Activation("relu"))
+		#Prevent overfitting of data.
+		model.add(BatchNormalization())
+		model.add(Dropout(0.5))
+		#Output layer where outputs are classes and correspond to output categories.
+		model.add(Dense(classes))
+		#'softmax' used in the output layer to make sure that the outputs sum up to 1.
+		model.add(Activation("softmax"))
+
+		return model
+
+TRAIN_MODEL.PY
+Run the module python.exe train_model.py in the terminal to see the accuracy, sensitivity and specificity.
+"""
+Deep learning model for training a CancerNet model to classify breast images for cancer using the Keras framework.
+It is built on Convolutional Neural Networks. It includes data augmentation, model training, and plotting results.
+"""
+
+#Running matplotlib on backend that is non-interactive for servers.
+import matplotlib
+matplotlib.use("Agg")
+
+#Apply real-time data augmentation during training.
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+#Modify learning rate during training.
+from tensorflow.keras.callbacks import LearningRateScheduler
+#Optimizer used for training.
+from tensorflow.keras.optimizers import Adagrad
+#Converts names to number using one hot encoder.
+from tensorflow.keras.utils import to_categorical
+#Generate classification report
+from sklearn.metrics import classification_report
+#Visualize using a confusion matrix.
+from sklearn.metrics import confusion_matrix
+#Import class CancerNet from cancernet.py in folder Cancernet
+from Cancernet.cancernet import CancerNet
+#import config.py from Cancernet folder
+from Cancernet import config
+#Import paths
+from imutils import paths
+from sklearn.utils.class_weight import compute_class_weight
+import matplotlib.pyplot as plt
+import numpy as np
+import os
+
+#Set hyperparameters-Number of iterations.
+NUM_EPOCHS=40; INIT_LR=1e-2; BS=32
+
+#Load dataset paths
+trainPaths=list(paths.list_images(config.train_path))
+lenTrain=len(trainPaths)
+lenVal=len(list(paths.list_images(config.val_path)))
+lenTest=len(list(paths.list_images(config.test_path)))
+
+#Prepare labels.
+trainLabels=[int(p.split(os.path.sep)[-2]) for p in trainPaths]
+trainLabels=to_categorical(trainLabels)
+
+#Calculate class weights.
+classes = np.unique(trainLabels.argmax(axis=1))
+classWeight = compute_class_weight('balanced', classes=classes, y=trainLabels.argmax(axis=1))
+classWeight = dict(enumerate(classWeight))
+
+
+#Data augmentation.
+trainAug = ImageDataGenerator(
+	rescale=1/255.0,
+	rotation_range=20,
+	zoom_range=0.05,
+	width_shift_range=0.1,
+	height_shift_range=0.1,
+	shear_range=0.05,
+	horizontal_flip=True,
+	vertical_flip=True,
+	fill_mode="nearest")
+
+valAug=ImageDataGenerator(rescale=1 / 255.0)
+
+trainGen = trainAug.flow_from_directory(
+	config.train_path,
+	class_mode="categorical",
+	target_size=(48,48),
+	color_mode="rgb",
+	shuffle=True,
+	batch_size=BS)
+valGen = valAug.flow_from_directory(
+	config.val_path,
+	class_mode="categorical",
+	target_size=(48,48),
+	color_mode="rgb",
+	shuffle=False,
+	batch_size=BS)
+testGen = valAug.flow_from_directory(
+	config.test_path,
+	class_mode="categorical",
+	target_size=(48,48),
+	color_mode="rgb",
+	shuffle=False,
+	batch_size=BS)
+
+#Model creation.
+model=CancerNet.build(width=48,height=48,depth=3,classes=2)
+
+#Model compilation
+opt=Adagrad(learning_rate=INIT_LR,decay=INIT_LR/NUM_EPOCHS) # Adaptive learning rate optimizer.
+model.compile(loss="binary_crossentropy",optimizer=opt,metrics=["accuracy"])#model compilation using binary cross-entropy cross function.
+
+def custom_gen(generator, class_weight):
+    for x, y in generator:
+        sample_weight = np.array([class_weight.get(label, 1.0) for label in y.argmax(axis=1)])
+        yield x, y, sample_weight
+
+trainGen = custom_gen(trainGen, classWeight)
+valGen = custom_gen(valGen, classWeight)
+
+#Model training.
+M = model.fit(
+    trainGen,
+    steps_per_epoch=lenTrain // BS,
+    validation_data=valGen,
+    validation_steps=lenVal // BS,
+    epochs=NUM_EPOCHS
+)
+#Validate outputs
+x, y, sample_weight = next(trainGen)
+
+print("Now evaluating the model")
+#Model evaluation.
+testGen.reset()
+pred_indices=model.predict(testGen,steps=(lenTest//BS)+1)
+
+pred_indices=np.argmax(pred_indices,axis=1)
+
+#Classification report and confusion matrix.
+print(classification_report(testGen.classes, pred_indices, target_names=testGen.class_indices.keys()))
+
+cm=confusion_matrix(testGen.classes,pred_indices)
+total=sum(sum(cm))
+#Metrics calculation.
+accuracy=(cm[0,0]+cm[1,1])/total
+specificity=cm[1,1]/(cm[1,0]+cm[1,1])
+sensitivity=cm[0,0]/(cm[0,0]+cm[0,1])
+print(cm)
+print(f'Accuracy: {accuracy}')
+print(f'Specificity: {specificity}')
+print(f'Sensitivity: {sensitivity}')
+
+N = NUM_EPOCHS
+
+#Plotting results.
+plt.style.use("ggplot")
+plt.figure()
+plt.plot(np.arange(0,N), M.history["loss"], label="train_loss")
+plt.plot(np.arange(0,N), M.history["val_loss"], label="val_loss")
+plt.plot(np.arange(0, N), M.history["accuracy"], label="train_accuracy")
+plt.plot(np.arange(0, N), M.history["val_accuracy"], label="val_accuracy")
+plt.title("Training Loss and Accuracy on the IDC Dataset")
+plt.xlabel("Epoch No.")
+plt.ylabel("Loss/Accuracy")
+plt.legend(loc="lower left")
+plt.savefig('plot.png')
