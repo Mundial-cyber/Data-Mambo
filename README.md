@@ -332,12 +332,10 @@ This project is an intelligent medical chatbot designed to answer complex health
 - Add patient-friendly visual diagrams to accompany explanations
 
 
-**HIV, Poverty, and Basic Infrastructure in Africa
-**
+****HIV, Poverty, and Basic Infrastructure in Africa**
 **A Data-Driven Analysis**
 
-**📌 Project Overview
-**
+**📌 Project Overview**
 HIV remains a major public health challenge in Sub-Saharan Africa. While medical advances have improved treatment and life expectancy, structural factors such as poverty, access to sanitation, electricity, and clean drinking water continue to influence HIV outcomes.
 
 This project explores the relationship between HIV deviation and key poverty and infrastructure indicators across African countries, using data visualization and statistical analysis to uncover meaningful patterns.
