@@ -330,3 +330,73 @@ This project is an intelligent medical chatbot designed to answer complex health
 - Expand specialty modules: cardiology, oncology, psychiatry, etc.
 - Integrate medical databases (e.g., PubMed or ICD-10)
 - Add patient-friendly visual diagrams to accompany explanations
+
+
+**HIV, Poverty, and Basic Infrastructure in Africa
+**
+**A Data-Driven Analysis**
+
+**📌 Project Overview
+**
+HIV remains a major public health challenge in Sub-Saharan Africa. While medical advances have improved treatment and life expectancy, structural factors such as poverty, access to sanitation, electricity, and clean drinking water continue to influence HIV outcomes.
+
+This project explores the relationship between HIV deviation and key poverty and infrastructure indicators across African countries, using data visualization and statistical analysis to uncover meaningful patterns.
+
+**🎯 Objectives**
+
+Analyze how income deprivation and access to basic services relate to HIV deviation
+
+Visualize disparities across African countries in relation to countries from other continents
+
+Highlight the role of infrastructure and equity in public health outcomes
+
+Support data-driven discussions around policy and intervention planning
+
+**📊 Key Indicators Analyzed**
+
+Multidimensional Poverty Indicators:
+
+Income Deprivation
+
+Sanitation Access
+
+Electricity Access
+
+Access to Drinking Water
+
+Approximated random factors like country and year by creating **HIV deviation** using FIXED LODs.
+
+**👨‍⚕️KEY INSIGHTS**
+
+1. Poverty ≠ High HIV cases and High income ≠ Low HIV cases.
+
+2. Income alone cannot be used as a measure for HIV prevalence.
+
+3. Higher school enrollment is associated with more predictable and controllable HIV outcomes, likely due to awareness, prevention and health literacy. 🤔
+
+4. Sanitation appears to have more stabilizing effect on HIV than even education! 😃 This might be because it's closely tied to overall health system strength, disease prevention infrastructure and community level vulnerability. (Very unequal distribution in Africa)
+
+5. Countries with better education and sanitation systems tend to experience more stable and predictable HIV outcomes. As in Africa, we need to improve. 🦾
+
+6. Electricity is strongly linked to healthcare reliability. Countries with limited electricity tend to have challenges in testing, treatment storage and healthcare delivery.
+
+7. Basic infrastructure like sanitation, water and electricity have more consistent outcomes with HIV than education alone.
+
+**🌍 Why This Matters**
+
+HIV is not only a medical issue — it is deeply connected to poverty, inequality, and development.
+Understanding these relationships helps:
+
+Inform public health policy
+
+Support sustainable development goals (SDGs)
+
+Advocate for equitable infrastructure investment
+
+**🎗️ Link to the Data:**
+https://public.tableau.com/views/HIVDATA_17671026613950/MultidimensionalPovertyVSHIVCases?:language=en-US&publish=yes&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link
+
+**📄 License**
+
+This project is for educational and research purposes.
+
