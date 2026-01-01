@@ -332,7 +332,9 @@ This project is an intelligent medical chatbot designed to answer complex health
 - Add patient-friendly visual diagrams to accompany explanations
 
 
-**HIV, Poverty, and Basic Infrastructure in Africa**
+
+**11. HIV, Poverty, and Basic Infrastructure in Africa**
+
 **A Data-Driven Analysis**
 
 **📌 Project Overview**
